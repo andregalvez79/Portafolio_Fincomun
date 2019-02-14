@@ -1,0 +1,88 @@
+---
+title: "Documentación de Variaciones sobre el IMOR"
+author: "André Vargas"
+date: "16 de enero de 2019"
+output: github_document
+always_allow_html: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introducción
+
+En esta documentación se describirá de donde se obtuvieorn los datos, el modelo y el propósito de estos modelos.
+Estos modelos se hicieron con la finalidad de proporcionar información estadistica sobre el comportamiento y relación de la cartera total, la cartera vencida y el IMOR (índice de mora). 
+
+Por lo que resuelve las siguientes preguntas: 
+
+1. ¿Qué relación y como se explica el desarrollo del IMOR por tipo de colocación?
+2. ¿Qué relación y como se explica el desarrollo del IMOR por territorios?
+3. ¿Qué territorios muestran un desarrollo del IMOR no esperado?
+4. ¿Qué sucursales son las que llevan este efecto no esperado?
+
+## Bases de Datos
+
+Las bases de datos se obtuvieron de cruzar los archivos de cierre de mes "FCV Base" y "FCV Flujos" (Ver SAS query). Se utilizó R para acumular las bases cruzadas y obtener la base general que se utilizó para el análisis y modelos.
+
+```{r Data, message=FALSE, warning=FALSE, include=T}
+load("C:\\Users\\andrevargas\\Documents\\IMOR\\base_sucs.RData")
+summary(fcvtot)
+```
+
+
+Esta base se separo en dos:
+
+1. por recuperados,
+2. por nuevos.
+(ver generar_bases)
+
+Aquí se generaron dos modelos.
+
+## Modelos generar_bases
+
+Se generaron dos modelos de tipo "mixed-models" que utiliza varias repiticiones sobre la misma observación y tmabién toma en consideración que para cada variable y observación existen diferentes condiciones de inicio (intercepto y pendeinte), de tal manera que se obtienen estimaciones generales sin sesgo.
+
+En otras palabras estos modelos son ideales ya que toman en cuenta que cada territorio y/o sucursal tiene su propio tipo de condiciones externas que determinan sus condiciones. Así no afectando ni sesgando los estimadores ya que estos asumen que todos estos son homogeneos.
+
+Siguiente ejemplos del resultado de uno de estos modelos.
+```{r Models_1, message=FALSE, warning=FALSE, include=T}
+load("C:\\Users\\andrevargas\\Documents\\IMOR\\base_sucs.RData")
+summary(maxmodel3)
+```
+
+Con esta información se separó la base por territorios y se generaron modelos generales como el siguiente (ver generar_bases_sucursal):
+
+```{r Models_2, message=FALSE, warning=FALSE, include=T}
+load("C:\\Users\\andrevargas\\Documents\\IMOR\\base_sucs.RData")
+summary(maxmodelsuc)
+```
+
+Del modelo anterior se tomaron las sucursales que explican varianza sobre el IMOR. así generando varias regresiones por sucursal, por ejemplo:
+
+```{r Model Plot, message=FALSE, warning=FALSE, include=T}
+load("C:\\Users\\andrevargas\\Documents\\IMOR\\base_sucs.RData")
+summary(fcvsuc312_reg)
+```
+
+
+##Resultados
+De los modelos obtenidos se genera una tabla como la presentada abajo, que se envía al área de Riesgos.
+
+
+| **Territorio** | **Sucursales** | **Relación Cartera Vencida** | **Relación Cartera Total** | **Relación Cartera Vencida y Total** |
+|------------|------------|--------------------------|------------------------|----------------------------------|
+| Poniente   | 312        | OK                       | OK                     | No Esperada                      |
+| Poniente   | 313        | NA (Esperada)            | NA (Esperada)          | NA (No esperada)                 |
+| Poniente   | 321        | OK                       | NA (Esperada)          | No Esperada                      |
+| Poniente   | 331        | NA (Esperada)            | OK                     | NA (Esperada)                    |
+| Poniente   | 332        | OK                       | NA (Esperada)          | NA (No esperada)                 |
+| Poniente   | 336        | NA (Esperada)            | OK                     | NA (Esperada)                    |
+| Poniente   | 341        | NA (Esperada)            | OK                     | NA (No esperada)                 |
+| Poniente   | 342        | NA (Esperada)            | NA (Esperada)          | NA (Esperada)                    |
+| Poniente   | 343        | OK                       | OK                     | OK                               |
+| Poniente   | 344        | NA (Esperada)            | NA (Esperada)          | NA (Esperada)                    |
+| Poniente   | 345        | NA (Esperada)            | NA (Esperada)          | NA (Esperada)                    |
+| Poniente   | 350        | NA (Esperada)            | OK                     | NA (Esperada)                    |
+| Poniente   | 352        | OK                       | OK                     | OK                               |

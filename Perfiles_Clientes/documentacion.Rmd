@@ -1,0 +1,119 @@
+---
+title: "Documentación de Recomendaciones para Cambios en los Perfiles de Clientes"
+author: "André Vargas"
+date: "18 de enero de 2019"
+output: word_document
+always_allow_html: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introducción
+
+En esta documentación se describirá de donde se obtuvieorn los datos, el modelo y el propósito de estos modelos.
+Estos modelos se hicieron con la finalidad de proporcionar información precisa sobre las diferencias de Genero por territorio, tipo de producto, giro de negocios, edad y montos vencidos, para cambiar e informar los perfiles de clientes actuales. 
+Por lo que resuelve las siguientes preguntas: 
+
+1. ¿Existe alguna diferencia entre Generos que explique el monto vencido?
+2. ¿Existe alguna diferencia entre generos por territorios que explique el monto vencido?
+3. ¿Existe alguna diferencia entre generos por edad que explique el monto vencido?
+4. ¿Existe alguna diferencia entre generos por territorios que explique el monto vencido?
+5. ¿Existe alguna diferencia entre generos por giro de negocio que explique el monto vencido?
+
+Estas respuestas dan resultado a recomendaciones sobre cambios en los perfiles de clientes.
+
+# Bases de Datos
+
+La base de datos se obtuvo del cierre de mes del FCV Base. Este se crucó contra el Catálogo de Sucursales para obtener los territorios. Algunas variables son:
+
+```{r Data, include=T}
+load("C:/Users/andrevargas/Documents/GitHub/Perfiles_Clientes/bases_genero.Rdata")
+summary(fcv[1:8])
+```
+
+# Modelos
+
+Los modelos utilizados fueron un "Random Forest". Este algoritmo tiene un fuerte poder predictivo y clasifica en orden las variables mas relevantes para explicar el fenómeno. Una vez clasificadas se utilizaron las variables que más explican varianza sobre el monto vencido se utlizó en una regresión lineal
+
+```{r Models, message=FALSE, warning=FALSE, include=T}
+library(randomForest)
+load("C:/Users/andrevargas/Documents/GitHub/Perfiles_Clientes/bases_genero.Rdata")
+varImpPlot(rf_gen)
+```
+
+```{r Model Plot, message=FALSE, warning=FALSE, include=T}
+load("C:/Users/andrevargas/Documents/GitHub/Perfiles_Clientes/bases_genero.Rdata")
+summary(regx)
+```
+
+Al interpretar y analizar los resultados de la regresión anterior se llegaron a las siguientes recomendaciones y resultados:
+
+
+#Resultados
+
+##Tasa de interés
+La gente a la que se le otorga una tasa más alta tiene un menor monto vencido. Esto pude ser debido a tres posibilidades:
+
+1.	Existe un sentido de reciprocidad. Al ser personas con poco o ningún acceso al crédito, estos son agradecidos al obtenerlo por primera vez.
+2.	Existe un sentido de pertenencia. Esto por la historia que existe en FinComún al ser fundado.
+3.	Existe miedo a endeudarse. Ya que es una tasa alta y por ser su primer crédito las personas tienden a pagar mejor. 
+
+##Valor del Crédito
+Un incremento en el Valor Inicial del Crédito tiende a reducir el monto vencido. Aunque el efecto es pequeño, esta relación es interesante:
+
+1.	Podría estar relacionada con el punto 3 o podría ser que ya que están solicitando un mayor monto y existe una mayor responsabilidad o miedo a endeudarse.
+
+##Monto Solicitado
+1.	A mayor monto solicitado también el monto vencido se reduce. Muy probablemente, por las razones anteriores.
+Producto
+
+##Comparado con el producto 3015:
+1.	El producto 4011, 4012, 4021, 4221, 4222 y 5010, incrementan el monto vencido. Este efecto es dado porque el producto 3015 los demás productos tienen mucho mayor cantidad de créditos y la cantidad otorgada al crédito son mucho mayores.
+Se necesitaría hacer un análisis más refinado para saber si existen diferencias reales. Sin embargo, es importante recalcar que NO existe una relación entre el Género ni Edad con el tipo de producto. Lo cual nos dice que una diferenciación a nivel producto NO sería útil.
+
+##Genero
+Comparado con las Mujeres:
+
+1.	Los hombres incrementan el monto vencido. Esto inclusive tomando en cuenta que los créditos otorgados a mujeres es 1.8 veces mayor al que se le otorga a los hombre. SI observamos la tabla inferior se puede distinguir que: la media y mediana del Monto vencido es menor en créditos otorgados a mujeres, inclusive cuando la cantidad del crédito es casi el doble. También, de acuerdo a estudios y teorías nuestra población se comporta de la misma manera.
+
+
+
+| Variables              | Mujer   | Hombre  |
+|------------------------|---------|---------|
+| Numero de Créditos     | 46503   | 25864   |
+| Promedio Monto Vencido | 3657.75 | 4074.93 |
+| Mediana Monto Vencido  | 3240.56 | 3664.69 |
+
+
+##Territorios
+Comparado con Hidalgo:
+
+1. El Territorio Norte, Puebla Y Sur generan mayor monto Vencido, y Poniente Y Oriente lo disminuyen. Al igual que los productos esto requiere de un mejor análisis. Sin embargo es muy importante recalcar que no existe una relación entre el género y el territorio, haciendo que alguna diferenciación no sea efectiva.
+
+##Edad
+1.	Mientras mayor sea la edad del cliente menor monto vencido generará. No existe relación entre la Edad y el Género, por lo cual diferenciar por edad y género no es útil.
+
+##Número de cuotas
+1.	Mientras el número de cuotas sea mayor el monto vencido incrementará. Usando esta información podríamos mejorar la prospección. Mientras más joven sea la persona menor número cuotas se deberían de ofrecer.
+
+##Estado Civil
+1.	La gente Casada paga mejor que la soltera, sin tener diferencias por género. Por lo cual se recomienda no discriminar por esta relación. 
+
+##Frecuencia de pagos
+1.	A mayor frecuencia de pagos mayor monto vencido. Se podría aplicar algo similar al número de cuotas.
+
+##Giros
+1.	Los giros fueron separados por número de créditos. Así se obtuvieron 7 categorías. Seis con la mayor cantidad de créditos y el resto en Otros. En comparación al resto de los giros (Otros), todos menos el giro de abarrotes y misceláneas, incrementan el monto vencido. Tampoco existe relación alguna entre el género y el giro.  
+
+##Recomendaciones
+1.	Ampliar la edad de las mujeres en todos los territorios y giros, al menos igual al a de los hombres.
+
+2.	Buscar a gente alrededor de 39 años en adelante, sin embargo no discriminar a los más jóvenes.
+
+3.	Para contrarrestar el efecto de la edad ,si son jóvenes, buscar que sean de preferencia:
+
+    3.1	Casados,
+    
+    3.2	Que el plazo y frecuencia del crédito sean los menores.
